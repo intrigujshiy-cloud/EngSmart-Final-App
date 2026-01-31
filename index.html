@@ -1,179 +1,215 @@
+<!DOCTYPE html>
 <html lang="ru">
 <head>
     <meta charset="UTF-8">
-    <title>EngSmart 4.1 - Fast Load</title>
-    <title>EngSmart 4.2 - Pro Edition</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>EngSmart 3.0 - Super Trainer</title>
     <style>
-        :root { --p: #4a90e2; --s: #2ecc71; --e: #e74c3c; }
-        body, html { margin:0; padding:0; height:100vh; font-family: 'Comic Sans MS', sans-serif; background: #f0f4f8; overflow: hidden; }
-        :root { --p: #4a90e2; --s: #2ecc71; --e: #e74c3c; --bg: #f8f9fa; }
-        body, html { margin:0; padding:0; height:100vh; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background: var(--bg); overflow: hidden; }
+        :root { --primary: #4a90e2; --bg-overlay: rgba(255,255,255,0.85); }
+        body, html { margin:0; padding:0; height:100vh; font-family: 'Comic Sans MS', cursive, sans-serif; overflow: hidden; }
+        
+        /* Стили Редактора */
+        #setup-screen {
+            position: fixed; inset: 0; background: #f0f4f8; z-index: 1000;
+            display: flex; align-items: center; justify-content: center; padding: 20px;
+        }
+        .setup-panel {
+            background: white; padding: 30px; border-radius: 20px; box-shadow: 0 10px 40px rgba(0,0,0,0.1);
+            width: 100%; max-width: 500px; display: flex; flex-direction: column; gap: 15px;
+        }
+        textarea { height: 150px; padding: 10px; border: 2px solid #ddd; border-radius: 10px; resize: none; font-family: monospace; }
+        .btn-start { background: #2ecc71; color: white; border: none; padding: 15px; border-radius: 50px; font-weight: bold; cursor: pointer; font-size: 18px; transition: 0.3s; }
+        .btn-start:hover { transform: scale(1.05); background: #27ae60; }
 
-        /* Скрываем всё до загрузки, чтобы не было мерцания */
-        #setup, #game { display: none; }
+        /* Стили Игры */
+        #game-screen { display: none; height: 100vh; flex-direction: column; background-size: cover; background-position: center; }
+        .overlay { position: absolute; inset: 0; background: var(--bg-overlay); backdrop-filter: blur(5px); display: flex; flex-direction: column; }
+        
+        .header { height: 70px; display: flex; justify-content: center; align-items: center; gap: 20px; background: white; z-index: 10; box-shadow: 0 2px 10px rgba(0,0,0,0.05); }
+        .dot { width: 15px; height: 15px; border-radius: 50%; background: #ddd; transition: 0.5s; }
+        .dot.active { background: var(--primary); transform: scale(1.3); box-shadow: 0 0 10px var(--primary); }
 
-        #setup { padding: 20px; max-width: 900px; margin: 0 auto; flex-direction: column; gap: 10px; height: 100vh; overflow-y: auto; box-sizing: border-box; display: flex; }
-        .cols { display: grid; grid-template-columns: 1fr 1fr 2fr; gap: 10px; }
-        textarea { height: 150px; padding: 10px; border: 2px solid #ddd; border-radius: 10px; font-family: monospace; font-size: 12px; }
-        .btn { background: var(--s); color: white; border: none; padding: 12px; border-radius: 50px; cursor: pointer; font-weight: bold; }
-        #out { width: 100%; height: 60px; background: #222; color: #2ecc71; border-radius: 8px; padding: 10px; font-size: 10px; border: none; }
-        /* КРАСИВЫЙ КОНСТРУКТОР */
-        #setup { padding: 30px; max-width: 1000px; margin: 0 auto; flex-direction: column; gap: 20px; height: 100vh; overflow-y: auto; box-sizing: border-box; display: flex; }
-        .header-ui { text-align: center; border-bottom: 3px solid var(--p); padding-bottom: 10px; margin-bottom: 10px; }
-        .header-ui h2 { margin: 0; color: var(--p); text-transform: uppercase; letter-spacing: 2px; }
+        .content { flex-grow: 1; overflow-y: auto; padding: 20px; display: flex; flex-wrap: wrap; justify-content: center; align-content: flex-start; gap: 20px; z-index: 5; }
+        
+        /* LVL 1 */
+        .card { width: 160px; height: 220px; perspective: 1000px; cursor: pointer; }
+        .card-inner { position: relative; width: 100%; height: 100%; transition: 0.6s; transform-style: preserve-3d; }
+        .card.flipped .card-inner { transform: rotateY(180deg); }
+        .card-face { position: absolute; inset: 0; backface-visibility: hidden; background: white; border: 4px solid var(--primary); border-radius: 15px; display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 10px; text-align: center; box-shadow: 0 5px 15px rgba(0,0,0,0.1); }
+        .card-back { transform: rotateY(180deg); background: #f0f7ff; color: var(--primary); font-size: 22px; font-weight: bold; }
+        .card img { max-width: 80%; max-height: 100px; object-fit: contain; margin-bottom: 10px; }
 
-        #game { height: 100vh; background-size: cover; background-position: center; position: relative; }
-        .card-ui { background: white; padding: 20px; border-radius: 15px; box-shadow: 0 10px 25px rgba(0,0,0,0.05); border: 1px solid #eee; }
-        .cols { display: grid; grid-template-columns: 1fr 1fr 2fr; gap: 15px; margin-top: 10px; }
-        
-        label { font-size: 12px; font-weight: bold; color: #7f8c8d; text-transform: uppercase; margin-bottom: 5px; display: block; }
-        textarea { width: 100%; height: 180px; padding: 12px; border: 2px solid #eaeeef; border-radius: 10px; font-family: 'Courier New', monospace; font-size: 13px; transition: 0.3s; box-sizing: border-box; resize: none; }
-        textarea:focus { border-color: var(--p); outline: none; background: #f0f7ff; }
-        
-        .btn { background: var(--s); color: white; border: none; padding: 15px 25px; border-radius: 12px; cursor: pointer; font-weight: bold; font-size: 14px; text-transform: uppercase; transition: 0.3s; box-shadow: 0 4px 15px rgba(46,204,113,0.3); }
-        .btn:hover { transform: translateY(-2px); box-shadow: 0 6px 20px rgba(46,204,113,0.4); }
-        .btn-preview { background: var(--p); box-shadow: 0 4px 15px rgba(74,144,226,0.3); }
-        
-        #out { width: 100%; height: 70px; background: #2c3e50; color: #2ecc71; border-radius: 10px; padding: 12px; font-size: 11px; border: none; margin-top: 10px; box-sizing: border-box; }
+        /* LVL 2 */
+        .match-item { padding: 15px; background: white; border: 3px solid var(--primary); border-radius: 12px; cursor: pointer; width: 45%; font-weight: bold; font-size: 18px; text-align: center; transition: 0.2s; }
+        .match-item.selected { background: var(--primary); color: white; }
+        .match-item.hidden { opacity: 0; pointer-events: none; }
 
-        /* ИГРОВОЙ ЭКРАН (БЕЗ ИЗМЕНЕНИЙ ЛОГИКИ) */
-        #game { height: 100vh; background-size: cover; background-position: center; position: relative; display: none; }
-        .ov { position: absolute; inset: 0; background: rgba(255,255,255,0.85); backdrop-filter: blur(5px); display: flex; flex-direction: column; }
-        .main { flex-grow: 1; overflow-y: auto; padding: 20px; display: flex; flex-wrap: wrap; justify-content: center; align-content: flex-start; gap: 15px; }
-        
-        .scramble-box { background:white; padding:20px; border-radius:20px; border:4px solid var(--p); text-align:center; width:350px; box-shadow: 0 10px 20px rgba(0,0,0,0.1); }
-        .scramble-box { background:white; padding:20px; border-radius:20px; border:4px solid var(--p); text-align:center; width:350px; box-shadow: 0 10px 20px rgba(0,0,0,0.1); font-family: 'Comic Sans MS', sans-serif; }
-        .letters-area { display: flex; flex-wrap: wrap; gap: 8px; justify-content: center; margin-top: 15px; }
-        .letter-btn { min-width: 35px; height: 40px; background: white; border: 2px solid var(--p); border-radius: 8px; font-weight: bold; cursor: pointer; font-size: 18px; padding: 0 10px; }
-        .letter-btn { min-width: 35px; height: 40px; background: white; border: 2px solid var(--p); border-radius: 8px; font-weight: bold; cursor: pointer; font-size: 18px; padding: 0 10px; font-family: 'Comic Sans MS', sans-serif; }
-        .letter-btn.wrong { animation: shake 0.3s; border-color: var(--e); color: var(--e); }
-        .word-progress { font-size: 24px; font-weight: bold; letter-spacing: 3px; margin: 15px 0; color: var(--p); border-bottom: 2px dashed #ddd; min-height: 35px; }
+        /* LVL 3 */
+        .write-box { background: white; padding: 30px; border-radius: 20px; border: 5px solid var(--primary); text-align: center; width: 300px; margin: auto; }
+        #wordInput { width: 100%; font-size: 28px; text-align: center; border: none; border-bottom: 3px solid #ddd; outline: none; margin-top: 20px; text-transform: uppercase; }
+        #wordInput.error { animation: shake 0.3s; border-bottom-color: #e74c3c; color: #e74c3c; }
+        @keyframes shake { 0%,100% {transform:translateX(0)} 25% {transform:translateX(-8px)} 75% {transform:translateX(8px)} }
 
-        .card { width: 140px; height: 190px; perspective: 1000px; cursor: pointer; }
-        .word-progress { font-size: 24px; font-weight: bold; letter-spacing: 3px; margin: 15px 0; color: var(--p); border-bottom: 2px dashed #ddd; min-height: 35px; font-family: 'Comic Sans MS', sans-serif; }
-        .card { width: 140px; height: 190px; perspective: 1000px; cursor: pointer; font-family: 'Comic Sans MS', sans-serif; }
-        .card-in { position: relative; width: 100%; height: 100%; transition: 0.6s; transform-style: preserve-3d; }
-        .card.f .card-in { transform: rotateY(180deg); }
-        .card-f { position: absolute; inset: 0; backface-visibility: hidden; background: white; border: 4px solid var(--p); border-radius: 15px; display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 10px; text-align: center; }
-        .card-b { transform: rotateY(180deg); background: #f0f7ff; color: var(--p); font-size: 18px; font-weight: bold; }
-        .card img { max-width: 90%; max-height: 90px; object-fit: contain; }
-        
-        .m-item { padding: 12px; background: white; border: 2px solid var(--p); border-radius: 10px; cursor: pointer; width: 45%; font-weight: bold; text-align: center; margin: 5px; }
-        .m-item { padding: 12px; background: white; border: 2px solid var(--p); border-radius: 10px; cursor: pointer; width: 45%; font-weight: bold; text-align: center; margin: 5px; font-family: 'Comic Sans MS', sans-serif; }
-        .m-item.sel { background: var(--p); color: white; }
-        .m-item.hid { visibility: hidden; }
-        
-        @keyframes shake { 0%,100%{transform:translateX(0)} 25%{transform:translateX(-5px)} 75%{transform:translateX(5px)} }
-        #victory { position: fixed; inset:0; background: rgba(0,0,0,0.9); display:none; flex-direction:column; align-items:center; justify-content:center; color:white; z-index:999; }
-        #victory { position: fixed; inset:0; background: rgba(0,0,0,0.9); display:none; flex-direction:column; align-items:center; justify-content:center; color:white; z-index:999; font-family: 'Comic Sans MS', sans-serif; }
+        .footer { height: 100px; display: flex; justify-content: center; align-items: center; z-index: 10; }
+        .next-btn { padding: 15px 40px; background: var(--primary); color: white; border: none; border-radius: 50px; font-size: 18px; font-weight: bold; cursor: pointer; box-shadow: 0 5px 20px rgba(74,144,226,0.3); }
+
+        #victory { position: fixed; inset: 0; background: rgba(0,0,0,0.9); z-index: 2000; display: none; flex-direction: column; align-items: center; justify-content: center; color: white; }
     </style>
 </head>
 <body>
 
-    <div id="setup">
-        <h2 style="text-align:center; color:var(--p);">EngSmart Constructor</h2>
-        <input type="text" id="bgI" value="https://images.unsplash.com/photo-1518709268805-4e9042af9f23" style="width:100%; padding:10px; border-radius:8px; border:1px solid #ddd;">
-        <div class="cols">
-            <textarea id="enC" placeholder="Apple&#10;Dog"></textarea>
-            <textarea id="ruC" placeholder="Яблоко&#10;Собака"></textarea>
-            <textarea id="imC" placeholder="Картинки..."></textarea>
-        <div class="header-ui">
-            <h2>EngSmart 4.2 Pro Constructor</h2>
+    <div id="setup-screen">
+        <div class="setup-panel">
+            <h2 style="margin:0; color: #4a90e2;">EngSmart 3.0 Setup</h2>
+            <label>1. Список слов (Word:Перевод:Картинка)</label>
+            <textarea id="wordsInput">Apple:Яблоко:https://cdn-icons-png.flaticon.com/512/415/415733.png
+Dog:Собака:https://cdn-icons-png.flaticon.com/512/616/616408.png
+Cat:Кот:https://cdn-icons-png.flaticon.com/512/616/616430.png</textarea>
+            
+            <label>2. Ссылка на фон</label>
+            <input type="text" id="bgInput" value="https://images.unsplash.com/photo-1518709268805-4e9042af9f23?q=80&w=1000" style="padding:10px; border-radius:8px; border:2px solid #ddd;">
+            
+            <button class="btn-start" onclick="startGame()">ЗАПУСТИТЬ ТРЕНАЖЕР 🚀</button>
+            <p style="font-size: 11px; color: #888; text-align: center;">Введи слова и нажми кнопку. После этого дай ссылку ребенку!</p>
         </div>
-
-        <div class="card-ui">
-            <label>1. Глобальный фон (URL картинки)</label>
-            <input type="text" id="bgI" value="https://images.unsplash.com/photo-1518709268805-4e9042af9f23" style="width:100%; padding:12px; border-radius:10px; border:2px solid #eaeeef; box-sizing:border-box;">
-        </div>
-
-        <div class="card-ui">
-            <div class="cols">
-                <div>
-                    <label>2. English Words</label>
-                    <textarea id="enC" placeholder="Apple&#10;Dog&#10;Sun"></textarea>
-                </div>
-                <div>
-                    <label>3. Russian Translation</label>
-                    <textarea id="ruC" placeholder="Яблоко&#10;Собака&#10;Солнце"></textarea>
-                </div>
-                <div>
-                    <label>4. Images/GIFs (Direct URLs)</label>
-                    <textarea id="imC" placeholder="https://.../apple.gif&#10;https://.../dog.png&#10;https://.../sun.jpg"></textarea>
-                </div>
-            </div>
-        </div>
-
-        <div style="display:flex; gap:15px; justify-content:center;">
-            <button class="btn" onclick="gen()">🚀 Get Iframe Code</button>
-            <button class="btn btn-preview" onclick="preview()">👁️ Test Game</button>
-        </div>
-
-        <div class="card-ui" style="background: #fdfdfd;">
-            <label>Your Genially Code (Copy this):</label>
-            <textarea id="out" readonly placeholder="Your code will appear here..."></textarea>
-        </div>
-        <button class="btn" onclick="gen()">1. СГЕНЕРИРОВАТЬ КОД ДЛЯ GENIALLY 🚀</button>
-        <textarea id="out" readonly></textarea>
-        <button class="btn" style="background:var(--p);" onclick="preview()">2. ПРЕДПРОСМОТР ТУТ 👁️</button>
     </div>
 
-    <div id="game">
-        <div class="ov">
-            <div style="height:50px; display:flex; justify-content:center; align-items:center; gap:10px; background:white;">
-            <div style="height:50px; display:flex; justify-content:center; align-items:center; gap:12px; background:white; border-bottom:1px solid #eee;">
-                <div class="dot" id="d1" style="width:10px;height:10px;border-radius:50%;background:#ddd;"></div>
-                <div class="dot" id="d2" style="width:10px;height:10px;border-radius:50%;background:#ddd;"></div>
-                <div class="dot" id="d3" style="width:10px;height:10px;border-radius:50%;background:#ddd;"></div>
-                <div class="dot" id="d4" style="width:10px;height:10px;border-radius:50%;background:#ddd;"></div>
+    <div id="game-screen">
+        <div class="overlay">
+            <div class="header">
+                <div class="dot active" id="d1"></div>
+                <div class="dot" id="d2"></div>
+                <div class="dot" id="d3"></div>
             </div>
-            <div id="cont" class="main"></div>
-            <div style="height:60px; display:flex; justify-content:center; align-items:center;">
-                <button id="nx" class="btn" style="padding:10px 40px; display:none;" onclick="nxLvl()">ДАЛЬШЕ →</button>
-            <div style="height:70px; display:flex; justify-content:center; align-items:center;">
-                <button id="nx" class="btn btn-preview" style="padding:10px 50px; display:none;" onclick="nxLvl()">NEXT →</button>
+            <div id="content" class="content"></div>
+            <div class="footer">
+                <button id="nextBtn" class="next-btn" onclick="nextLevel()">Я ВСЁ ВЫУЧИЛ! →</button>
             </div>
         </div>
     </div>
 
     <div id="victory">
-        <h1>YOU ARE A SUPERHERO! 🏆</h1>
-        <h1 style="font-size:40px;">YOU ARE A SUPERHERO! 🏆</h1>
-        <button class="btn" onclick="location.reload()">REPLAY</button>
+        <h1 style="font-size: 50px; color: #f1c40f;">SUPERHERO! 🦸‍♂️</h1>
+        <p style="font-size: 20px;">Ты выучил все слова на сегодня!</p>
+        <button class="next-btn" onclick="location.reload()">ИГРАТЬ СНОВА</button>
     </div>
 
-@@ -94,15 +125,15 @@ <h1>YOU ARE A SUPERHERO! 🏆</h1>
+    <script>
+        let words = [];
+        let level = 1;
+        let matchSelected = { en: null, ru: null };
+        let writeIdx = 0;
 
-        function gen() {
-            const data = collect();
-            if(!data.ws.length) return alert("Введите слова!");
-            if(!data.ws.length) return alert("Please enter some words first!");
-            const link = window.location.href.split('?')[0] + '?d=' + btoa(encodeURIComponent(JSON.stringify(data)));
-            document.getElementById('out').value = `<iframe width="100%" height="600" src="${link}" frameborder="0" allow="autoplay"></iframe>`;
-            alert("Готово! Копируй код из черного поля.");
-            alert("Success! Code generated.");
+        function speak(text) {
+            const m = new SpeechSynthesisUtterance(text);
+            m.lang = 'en-US';
+            speechSynthesis.speak(m);
         }
 
-        function preview() {
-            const data = collect();
-            if(!data.ws.length) return alert("Введите слова!");
-            if(!data.ws.length) return alert("Enter words to preview!");
-            start(data);
+        function startGame() {
+            const raw = document.getElementById('wordsInput').value;
+            words = raw.split('\n').filter(l => l.includes(':')).map(l => {
+                const [en, ru, im] = l.split(':');
+                return { en: en.trim(), ru: ru.trim(), im: im.trim() };
+            });
+            
+            document.getElementById('game-screen').style.backgroundImage = `url(${document.getElementById('bgInput').value})`;
+            document.getElementById('setup-screen').style.display = 'none';
+            document.getElementById('game-screen').style.display = 'flex';
+            renderLevel();
         }
 
-@@ -154,7 +185,7 @@ <h1>YOU ARE A SUPERHERO! 🏆</h1>
+        function renderLevel() {
+            const cont = document.getElementById('content');
+            cont.innerHTML = '';
+            document.querySelectorAll('.dot').forEach((d, i) => d.className = (i+1 === level) ? 'dot active' : 'dot');
+
+            if(level === 1) {
+                words.forEach(w => {
+                    const card = document.createElement('div');
+                    card.className = 'card';
+                    card.innerHTML = `<div class="card-inner">
+                        <div class="card-face"><img src="${w.im}"><div>${w.en}</div></div>
+                        <div class="card-face card-back">${w.ru}</div>
+                    </div>`;
+                    card.onclick = () => {
+                        card.classList.toggle('flipped');
+                        if(card.classList.contains('flipped')) speak(w.en);
+                    };
+                    cont.appendChild(card);
                 });
-            } else if(st.lvl === 4) {
-                const w = st.words[st.wIdx];
-                c.innerHTML = `<div style="background:white; padding:30px; border-radius:20px; border:4px solid var(--p); text-align:center; width:250px;">${w.im ? `<img src="${w.im}" style="width:80px;margin-bottom:10px;">` : '🖼️'}<h3>${w.ru}</h3><input type="text" id="wIn" style="width:100%; font-size:24px; text-align:center; border:none; border-bottom:2px solid #ddd; outline:none; text-transform:uppercase;"></div>`;
-                c.innerHTML = `<div style="background:white; padding:30px; border-radius:20px; border:4px solid var(--p); text-align:center; width:250px;">${w.im ? `<img src="${w.im}" style="width:80px;margin-bottom:10px;">` : '🖼️'}<h3>${w.ru}</h3><input type="text" id="wIn" placeholder="Type here..." style="width:100%; font-size:24px; text-align:center; border:none; border-bottom:2px solid #ddd; outline:none; text-transform:uppercase;"></div>`;
-                const i = document.getElementById('wIn'); setTimeout(()=>i.focus(), 100);
-                i.oninput = () => { if(i.value.toLowerCase() === w.en.toLowerCase()){ st.wIdx++; if(st.wIdx < st.words.length) render(); else document.getElementById('victory').style.display='flex'; } };
+            } else if(level === 2) {
+                document.getElementById('nextBtn').style.display = 'none';
+                const enList = [...words].sort(() => Math.random() - 0.5);
+                const ruList = [...words].sort(() => Math.random() - 0.5);
+                
+                const colEn = document.createElement('div'); colEn.style.width='45%';
+                const colRu = document.createElement('div'); colRu.style.width='45%';
+                
+                enList.forEach(w => {
+                    const b = document.createElement('div'); b.className = 'match-item'; b.innerText = w.en;
+                    b.onclick = () => { speak(w.en); handleMatch(w.en, 'en', b); };
+                    colEn.appendChild(b);
+                });
+                ruList.forEach(w => {
+                    const b = document.createElement('div'); b.className = 'match-item'; b.innerText = w.ru;
+                    b.onclick = () => handleMatch(w.en, 'ru', b);
+                    colRu.appendChild(b);
+                });
+                cont.append(colEn, colRu);
+            } else if(level === 3) {
+                document.getElementById('nextBtn').style.display = 'none';
+                const w = words[writeIdx];
+                cont.innerHTML = `<div class="write-box">
+                    <img src="${w.im}" style="width:100px;">
+                    <h3>${w.ru}</h3>
+                    <input type="text" id="wordInput" placeholder="..." autocomplete="off">
+                </div>`;
+                const inp = document.getElementById('wordInput');
+                inp.focus();
+                inp.oninput = () => {
+                    if(inp.value.toLowerCase() === w.en.toLowerCase()) {
+                        inp.style.color = '#2ecc71';
+                        setTimeout(() => {
+                            writeIdx++;
+                            if(writeIdx < words.length) renderLevel();
+                            else document.getElementById('victory').style.display = 'flex';
+                        }, 500);
+                    } else if(!w.en.toLowerCase().startsWith(inp.value.toLowerCase())) {
+                        inp.classList.add('error');
+                        setTimeout(() => inp.classList.remove('error'), 300);
+                    }
+                };
             }
-@@ -173,7 +204,6 @@ <h1>YOU ARE A SUPERHERO! 🏆</h1>
         }
-        function nxLvl() { st.lvl++; st.wIdx = 0; render(); }
 
-        // ПРОВЕРКА ПРИ ЗАГРУЗКЕ: ИГРА ИЛИ КОНСТРУКТОР?
-        window.onload = () => {
-            const p = new URLSearchParams(window.location.search);
-            if(p.has('d')) {
+        function handleMatch(val, type, btn) {
+            if(matchSelected[type]) matchSelected[type].btn.classList.remove('selected');
+            matchSelected[type] = { val, btn };
+            btn.classList.add('selected');
+            
+            if(matchSelected.en && matchSelected.ru) {
+                if(matchSelected.en.val === matchSelected.ru.val) {
+                    matchSelected.en.btn.classList.add('hidden');
+                    matchSelected.ru.btn.classList.add('hidden');
+                    matchSelected = { en: null, ru: null };
+                    if(document.querySelectorAll('.match-item:not(.hidden)').length === 0) {
+                        document.getElementById('nextBtn').style.display = 'block';
+                    }
+                } else {
+                    setTimeout(() => {
+                        matchSelected.en.btn.classList.remove('selected');
+                        matchSelected.ru.btn.classList.remove('selected');
+                        matchSelected = { en: null, ru: null };
+                    }, 400);
+                }
+            }
+        }
+
+        function nextLevel() {
+            level++;
+            renderLevel();
+        }
+    </script>
+</body>
+</html>
