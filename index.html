@@ -3,133 +3,167 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>EngSmart 4.0 - Full Training Cyberpunk</title>
+    <title>EngSmart 4.0 Constructor - Cyberpunk Edition</title>
     <style>
-        :root { --neon-blue: #00f3ff; --neon-pink: #ff00ff; --dark-bg: #0d0d15; }
-        body { background: var(--dark-bg); color: #fff; font-family: 'Segoe UI', sans-serif; display: flex; flex-direction: column; align-items: center; min-height: 100vh; margin: 0; overflow-x: hidden; }
-        
-        /* КОНСТРУКТОР */
-        .admin-panel { width: 100%; max-width: 900px; background: rgba(20, 20, 30, 0.9); padding: 25px; border-radius: 15px; border: 1px solid var(--neon-blue); margin-top: 20px; box-shadow: 0 0 20px rgba(0,243,255,0.2); }
-        .grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 15px; margin: 20px 0; }
-        textarea, input { width: 100%; padding: 12px; background: #161625; border: 1px solid #333; border-radius: 5px; color: var(--neon-blue); outline: none; box-sizing: border-box; }
-        .btn { width: 100%; padding: 15px; border: none; border-radius: 8px; cursor: pointer; font-weight: bold; text-transform: uppercase; transition: 0.3s; margin: 5px 0; }
-        .btn-gen { background: linear-gradient(45deg, var(--neon-blue), #0077ff); color: #000; }
-        .output { background: #000; color: var(--neon-blue); padding: 10px; font-family: monospace; font-size: 11px; border: 1px dashed #444; word-break: break-all; margin: 10px 0; }
+        :root {
+            --neon-blue: #00f3ff;
+            --neon-pink: #ff00ff;
+            --dark-bg: #0d0d15;
+            --card-bg: rgba(20, 20, 30, 0.8);
+        }
 
-        /* ИГРОВОЙ ИНТЕРФЕЙС */
-        #game-view { display: none; width: 100vw; height: 100vh; background-size: cover; background-position: center; flex-direction: column; align-items: center; justify-content: center; position: fixed; top:0; left:0; z-index: 100; }
-        .game-box { background: rgba(255,255,255,0.95); padding: 30px; border-radius: 20px; width: 350px; min-height: 450px; display: flex; flex-direction: column; align-items: center; justify-content: center; color: #333; box-shadow: 0 20px 50px rgba(0,0,0,0.5); text-align: center; position: relative; }
-        
-        /* Специфические стили уровней */
-        .match-btn { background: #eee; border: 2px solid #ddd; padding: 10px; margin: 5px; border-radius: 8px; cursor: pointer; width: 120px; font-weight: bold; }
-        .match-btn.selected { border-color: var(--neon-pink); background: #fce4ec; }
-        .letter-btn { display: inline-block; padding: 10px 15px; background: var(--neon-blue); color: #000; margin: 5px; border-radius: 5px; font-weight: bold; cursor: pointer; }
-        .write-input { border: 2px solid #333; padding: 15px; border-radius: 10px; font-size: 20px; text-align: center; width: 80%; }
-        
-        .level-header { position: absolute; top: -50px; color: var(--neon-blue); font-weight: bold; text-shadow: 0 0 5px #000; background: rgba(0,0,0,0.6); padding: 5px 20px; border-radius: 20px; }
-        .card-img { max-height: 180px; margin-bottom: 20px; border-radius: 10px; }
-        .next-btn { margin-top: 25px; background: var(--neon-pink); color: #fff; padding: 15px 60px; border-radius: 50px; border: none; cursor: pointer; font-size: 18px; box-shadow: 0 0 15px var(--neon-pink); }
+        body {
+            background-color: var(--dark-bg);
+            color: #fff;
+            font-family: 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            padding: 20px;
+            background-image: linear-gradient(to bottom, #0d0d15, #1a1a2e);
+            min-height: 100vh;
+        }
+
+        h1 {
+            color: var(--neon-blue);
+            text-shadow: 0 0 10px var(--neon-blue);
+            text-transform: uppercase;
+            letter-spacing: 3px;
+            margin-bottom: 30px;
+        }
+
+        .container {
+            width: 100%;
+            max-width: 900px;
+            background: var(--card-bg);
+            padding: 25px;
+            border-radius: 15px;
+            border: 1px solid var(--neon-blue);
+            box-shadow: 0 0 20px rgba(0, 243, 255, 0.2);
+            backdrop-filter: blur(10px);
+        }
+
+        .input-group {
+            margin-bottom: 20px;
+        }
+
+        input[type="text"], textarea {
+            width: 100%;
+            padding: 12px;
+            background: #161625;
+            border: 1px solid #333;
+            border-radius: 5px;
+            color: #00f3ff;
+            outline: none;
+            transition: 0.3s;
+            box-sizing: border-box;
+        }
+
+        input:focus {
+            border-color: var(--neon-pink);
+            box-shadow: 0 0 10px rgba(255, 0, 255, 0.5);
+        }
+
+        .grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 15px;
+            margin-bottom: 25px;
+        }
+
+        .card {
+            background: rgba(255, 255, 255, 0.05);
+            padding: 15px;
+            border-radius: 8px;
+            border-left: 3px solid var(--neon-pink);
+        }
+
+        .btn {
+            width: 100%;
+            padding: 15px;
+            margin: 10px 0;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            font-weight: bold;
+            text-transform: uppercase;
+            transition: 0.3s;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+        }
+
+        .btn-generate {
+            background: linear-gradient(45deg, #00f3ff, #0077ff);
+            color: #000;
+        }
+
+        .btn-preview {
+            background: transparent;
+            border: 2px solid var(--neon-pink);
+            color: var(--neon-pink);
+        }
+
+        .btn-next {
+            background: #ff00ff;
+            color: #fff;
+            box-shadow: 0 0 15px #ff00ff;
+        }
+
+        .btn:hover {
+            transform: translateY(-2px);
+            filter: brightness(1.2);
+        }
+
+        .preview-area {
+            width: 100%;
+            height: 100px;
+            background: #000;
+            margin-top: 15px;
+            border-radius: 5px;
+            border: 1px dashed #444;
+        }
     </style>
 </head>
 <body>
 
-    <div id="editor-view" class="admin-panel">
-        <h1 style="text-align: center; margin-top: 0;">EngSmart 4.0 Cyberpunk</h1>
-        <input type="text" id="bgInp" placeholder="Background URL" value="https://images.unsplash.com/photo-1518709268805-4e9042af9f23">
+    <h1>EngSmart 4.0 Constructor</h1>
+
+    <div class="container">
+        <div class="input-group">
+            <input type="text" placeholder="https://images.unsplash.com/photo-example...">
+        </div>
+
         <div class="grid">
-            <div><label>English</label><textarea id="enInp" rows="6">Apple&#10;Dog&#10;Cat</textarea></div>
-            <div><label>Russian</label><textarea id="ruInp" rows="6">Яблоко&#10;Собака&#10;Кот</textarea></div>
-            <div><label>Images</label><textarea id="imgInp" rows="6">https://cdn-icons-png.flaticon.com/512/415/415733.png&#10;https://cdn-icons-png.flaticon.com/512/616/616430.png&#10;https://cdn-icons-png.flaticon.com/512/616/616430.png</textarea></div>
+            <div class="card">
+                <label>Apple</label>
+                <textarea rows="3"></textarea>
+            </div>
+            <div class="card">
+                <label>Яблоко</label>
+                <textarea rows="3"></textarea>
+            </div>
+            <div class="card">
+                <label>Image URLs...</label>
+                <textarea rows="3"></textarea>
+            </div>
         </div>
-        <button class="btn btn-gen" onclick="generate()">🚀 Generate Genially Code</button>
-        <div id="result" class="output">Код будет тут...</div>
+
+        <button class="btn btn-generate">
+            1. GENERATE IFRAME 📝
+        </button>
+
+        <div class="preview-area"></div>
+
+        <button class="btn btn-preview">
+            2. PREVIEW HERE 👁️
+        </button>
+
+        <button class="btn btn-next">
+            Next ➔
+        </button>
     </div>
 
-    <div id="game-view">
-        <div class="game-box">
-            <div id="lvl-tag" class="level-header">Level 1</div>
-            <div id="content-area" style="width: 100%;"></div>
-            <button id="main-next" class="next-btn" onclick="checkOrNext()" style="display:none;">NEXT ➔</button>
-        </div>
-    </div>
-
-    <script>
-        let words = [], idx = 0, lvl = 1, selectedMatch = null;
-
-        function speak(t) { const m = new SpeechSynthesisUtterance(t); m.lang = 'en-US'; speechSynthesis.speak(m); }
-
-        function generate() {
-            const bg = encodeURIComponent(document.getElementById('bgInp').value);
-            const en = encodeURIComponent(document.getElementById('enInp').value.split('\n').join(','));
-            const ru = encodeURIComponent(document.getElementById('ruInp').value.split('\n').join(','));
-            const img = encodeURIComponent(document.getElementById('imgInp').value.split('\n').join(','));
-            const url = `${window.location.href.split('?')[0]}?play=true&bg=${bg}&en=${en}&ru=${ru}&img=${img}`;
-            document.getElementById('result').innerText = `<iframe src="${url}" width="800" height="600" style="border:0;" allowfullscreen></iframe>`;
-        }
-
-        function renderLevel() {
-            const area = document.getElementById('content-area');
-            const tag = document.getElementById('lvl-tag');
-            const nextBtn = document.getElementById('main-next');
-            area.innerHTML = ""; nextBtn.style.display = "none";
-            
-            const c = words[idx];
-
-            if(lvl === 1) { // FLASHCARDS
-                tag.innerText = "TASK 1: FLASHCARDS";
-                area.innerHTML = `<img src="${c.img}" class="card-img"><h3>${c.en}</h3><p style="color:#888">Click to flip</p>`;
-                area.onclick = () => { area.innerHTML = `<h3>${c.ru}</h3>`; nextBtn.style.display = "block"; speak(c.en); };
-            } 
-            else if(lvl === 2) { // MATCHING
-                tag.innerText = "TASK 2: MATCHING";
-                // Упрощенный матчинг для примера (текущее слово)
-                area.innerHTML = `<p>Match: <b>${c.en}</b></p>`;
-                ['Яблоко','Собака','Кот','Дом'].forEach(word => {
-                    area.innerHTML += `<button class="match-btn" onclick="if('${word}'=='${c.ru}'){alert('Correct!'); lvl2Next();}">${word}</button>`;
-                });
-            }
-            else if(lvl === 3) { // UNSCRAMBLE
-                tag.innerText = "TASK 3: UNSCRAMBLE";
-                let letters = c.en.split('').sort(() => Math.random()-0.5);
-                area.innerHTML = `<img src="${c.img}" class="card-img"><div id="ans" style="font-size:24px; margin:10px; border-bottom:2px solid #333; min-height:30px;"></div>`;
-                letters.forEach(l => {
-                    area.innerHTML += `<span class="letter-btn" onclick="document.getElementById('ans').innerText+='${l}'; checkUnscramble('${c.en}')">${l}</span>`;
-                });
-            }
-            else if(lvl === 4) { // WRITE IT
-                tag.innerText = "TASK 4: WRITE IT";
-                area.innerHTML = `<img src="${c.img}" class="card-img"><br><input type="text" id="wInput" class="write-input" placeholder="...">`;
-                nextBtn.style.display = "block";
-                nextBtn.innerText = "CHECK";
-            }
-        }
-
-        function checkUnscramble(orig) { if(document.getElementById('ans').innerText === orig) document.getElementById('main-next').style.display = "block"; }
-
-        function checkOrNext() {
-            if(lvl === 4) {
-                if(document.getElementById('wInput').value.toLowerCase() === words[idx].en.toLowerCase()) {
-                    alert("Perfect!"); nextCard();
-                } else { alert("Try again!"); }
-            } else { nextCard(); }
-        }
-
-        function lvl2Next() { nextCard(); }
-
-        function nextCard() {
-            idx++; if(idx >= words.length) { idx = 0; lvl++; if(lvl > 4) lvl = 1; }
-            renderLevel();
-        }
-
-        const p = new URLSearchParams(window.location.search);
-        if(p.has('play')) {
-            document.getElementById('editor-view').style.display = 'none';
-            document.getElementById('game-view').style.display = 'flex';
-            document.getElementById('game-view').style.backgroundImage = `url('${decodeURIComponent(p.get('bg'))}')`;
-            const en = decodeURIComponent(p.get('en')).split(','), ru = decodeURIComponent(p.get('ru')).split(','), img = decodeURIComponent(p.get('img')).split(',');
-            words = en.map((e, i) => ({ en: e, ru: ru[i], img: img[i] }));
-            renderLevel();
-        }
-    </script>
 </body>
 </html>
