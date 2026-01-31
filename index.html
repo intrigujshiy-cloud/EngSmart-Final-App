@@ -42,13 +42,13 @@
         
         .btn-start { background: #ff0055; color: white; border: none; padding: 15px; border-radius: 5px; font-weight: bold; cursor: pointer; font-size: 18px; text-transform: uppercase; clip-path: polygon(10% 0, 100% 0, 90% 100%, 0% 100%); transition: 0.3s; }
         .btn-iframe { background: transparent; color: var(--cyber-accent); border: 1px solid var(--cyber-accent); padding: 8px; border-radius: 4px; cursor: pointer; font-size: 12px; }
-        #iframeResult { background: #000; color: #0f0; padding: 10px; font-family: monospace; font-size: 11px; border: 1px dashed #0f0; border-radius: 5px; display: none; }
+        #iframeResult { background: #000; color: #0f0; padding: 10px; font-family: monospace; font-size: 11px; border: 1px dashed #0f0; border-radius: 5px; display: none; margin-top: 10px; }
 
         /* ИГРА */
-        #game-screen { display: none; height: 100vh; flex-direction: column; background-size: cover; background-position: center; }
+        #game-screen { display: none; height: 100vh; flex-direction: column; background-size: cover; background-position: center; position: relative; }
         .overlay { position: absolute; inset: 0; background: var(--bg-overlay); backdrop-filter: blur(5px); display: flex; flex-direction: column; }
         .header { height: 60px; display: flex; justify-content: center; align-items: center; gap: 15px; background: white; z-index: 10; }
-        .dot { width: 12px; height: 12px; border-radius: 50%; background: #ddd; }
+        .dot { width: 12px; height: 12px; border-radius: 50%; background: #ddd; transition: 0.5s; }
         .dot.active { background: var(--primary); transform: scale(1.3); }
         .content { flex-grow: 1; overflow-y: auto; padding: 20px; display: flex; flex-wrap: wrap; justify-content: center; align-content: flex-start; gap: 20px; }
         
@@ -62,7 +62,7 @@
         .card-back { transform: rotateY(180deg); font-weight: bold; color: #000 !important; }
 
         .footer { height: 80px; display: flex; justify-content: center; align-items: center; }
-        .next-btn { padding: 12px 35px; background: var(--btn-next); color: white; border: none; border-radius: 50px; font-size: 16px; font-weight: bold; cursor: pointer; }
+        .next-btn { padding: 12px 35px; background: var(--btn-next); color: white; border: none; border-radius: 50px; font-size: 16px; font-weight: bold; cursor: pointer; transition: 0.3s; }
         
         .card { width: 150px; height: 200px; perspective: 1000px; cursor: pointer; }
         .card-inner { position: relative; width: 100%; height: 100%; transition: 0.6s; transform-style: preserve-3d; }
@@ -71,9 +71,15 @@
         .match-item.selected { background: var(--card-border); color: white !important; }
         .match-item.hidden { opacity: 0; pointer-events: none; }
         
-        /* Стиль для зоны сборки букв */
         #az { min-height: 50px; border-bottom: 3px dashed var(--primary); margin: 20px auto; font-size: 35px; color: #000; letter-spacing: 5px; text-transform: uppercase; width: fit-content; padding: 0 20px; }
-        .error-flash { color: #ff0055 !important; border-bottom-color: #ff0055 !important; }
+        
+        /* ФИНАЛЬНЫЙ ЭКРАН */
+        #victory { position: fixed; inset: 0; background: rgba(0,0,0,0.95); z-index: 2000; display: none; flex-direction: column; align-items: center; justify-content: center; color: white; text-align: center; }
+        #victory h1 { font-size: 60px; color: #f1c40f; text-shadow: 0 0 20px #f1c40f; margin-bottom: 10px; }
+        .hero-img { font-size: 100px; margin-bottom: 20px; animation: bounce 1s infinite alternate; }
+        @keyframes bounce { from { transform: translateY(0); } to { transform: translateY(-20px); } }
+        .confetti { position: absolute; width: 10px; height: 10px; background: #f00; animation: fall 3s linear infinite; }
+        @keyframes fall { to { transform: translateY(100vh) rotate(360deg); } }
     </style>
 </head>
 <body>
@@ -102,10 +108,19 @@
 
     <div id="game-screen">
         <div class="overlay">
-            <div class="header"><div class="dot" id="d1"></div><div class="dot" id="d2"></div><div class="dot" id="d3"></div><div class="dot" id="d4"></div></div>
+            <div class="header">
+                <div class="dot" id="d1"></div><div class="dot" id="d2"></div><div class="dot" id="d3"></div><div class="dot" id="d4"></div>
+            </div>
             <div id="content" class="content"></div>
             <div class="footer"><button id="nextBtn" class="next-btn" onclick="nextLevel()">NEXT →</button></div>
         </div>
+    </div>
+
+    <div id="victory">
+        <div class="hero-img">🦸‍♂️</div>
+        <h1>SUPERHERO!</h1>
+        <p style="font-size: 20px;">Mission accomplished. You learned all the words!</p>
+        <button class="next-btn" style="margin-top: 30px;" onclick="location.reload()">REPLAY MISSION</button>
     </div>
 
     <script>
@@ -125,6 +140,14 @@
                 c= hex.substring(1).split(''); if(c.length== 3) c= [c[0], c[0], c[1], c[1], c[2], c[2]];
                 c= '0x'+c.join(''); return 'rgba('+[(c>>16)&255, (c>>8)&255, c&255].join(',')+',0.5)';
             } return 'rgba(74, 144, 226, 0.5)';
+        }
+
+        function createConfetti() {
+            for(let i=0; i<50; i++) {
+                const c = document.createElement('div'); c.className = 'confetti';
+                c.style.left = Math.random()*100+'vw'; c.style.background = `hsl(${Math.random()*360}, 100%, 50%)`;
+                c.style.animationDelay = Math.random()*3+'s'; document.getElementById('victory').appendChild(c);
+            }
         }
 
         function generateIframe() {
@@ -172,8 +195,7 @@
                 cont.append(cEn, cRu);
             } else if(level === 3) {
                 document.getElementById('nextBtn').style.display = 'none';
-                const w = words[currentIdx]; let curS = ""; 
-                let lets = w.en.split('').sort(() => Math.random()-0.5);
+                const w = words[currentIdx]; let curS = ""; let lets = w.en.split('').sort(() => Math.random()-0.5);
                 cont.innerHTML = `<div style="text-align:center;width:100%"><img src="${w.im}" style="width:120px;display:block;margin:0 auto 10px"><div id="az"></div><div id="lz"></div></div>`;
                 const az = document.getElementById('az');
                 lets.forEach(l => {
@@ -181,12 +203,8 @@
                     s.onclick = () => { 
                         curS += l; az.innerText = curS; s.style.visibility = "hidden";
                         if(curS.length === w.en.length) {
-                            if(curS.toLowerCase() === w.en.toLowerCase()) {
-                                speak(w.en); setTimeout(() => { currentIdx++; if(currentIdx < words.length) renderLevel(); else { currentIdx=0; document.getElementById('nextBtn').style.display='block'; } }, 600);
-                            } else {
-                                az.classList.add('error-flash');
-                                setTimeout(() => { renderLevel(); }, 600); // Авто-сброс при ошибке
-                            }
+                            if(curS.toLowerCase() === w.en.toLowerCase()) { speak(w.en); setTimeout(() => { currentIdx++; if(currentIdx < words.length) renderLevel(); else { currentIdx=0; document.getElementById('nextBtn').style.display='block'; } }, 600); }
+                            else { az.style.color = 'red'; setTimeout(() => renderLevel(), 600); }
                         }
                     }; cont.querySelector('#lz').appendChild(s);
                 });
@@ -195,7 +213,7 @@
                 const w = words[currentIdx];
                 cont.innerHTML = `<div style="background:var(--card-bg);padding:20px;border-radius:20px;border:5px solid var(--card-border);text-align:center;width:280px;margin:auto;box-shadow:0 0 20px var(--card-neon)"><img src="${w.im}" style="width:100px"><h3 style="color:#000">${w.ru}</h3><input type="text" id="wi" style="width:100%;font-size:24px;text-align:center;border:none;border-bottom:3px solid #ddd;outline:none;text-transform:uppercase;color:#000" autocomplete="off"></div>`;
                 const inp = document.getElementById('wi'); inp.focus();
-                inp.oninput = () => { if(inp.value.toLowerCase() === w.en.toLowerCase()) { speak(w.en); setTimeout(() => { currentIdx++; if(currentIdx < words.length) renderLevel(); else alert('MISSION COMPLETE!'); }, 500); } };
+                inp.oninput = () => { if(inp.value.toLowerCase() === w.en.toLowerCase()) { speak(w.en); setTimeout(() => { currentIdx++; if(currentIdx < words.length) renderLevel(); else { document.getElementById('victory').style.display='flex'; createConfetti(); } }, 500); } };
             }
         }
 
@@ -204,11 +222,11 @@
             if(matchSelected[t]) matchSelected[t].btn.classList.remove('selected');
             matchSelected[t] = { v, btn: b }; b.classList.add('selected');
             if(matchSelected.en && matchSelected.ru) {
-                if(matchSelected.en.v === matchSelected.ru.v) { matchSelected.en.btn.classList.add('hidden'); matchSelected.ru.btn.classList.add('hidden'); matchSelected = { en: null, ru: null }; if(document.querySelectorAll('.match-item:not(.hidden)').length === 0) document.getElementById('nextBtn').style.display = 'block'; }
+                if(matchSelected.en.v === matchSelected.ru.val || matchSelected.en.v === matchSelected.ru.v) { matchSelected.en.btn.classList.add('hidden'); matchSelected.ru.btn.classList.add('hidden'); matchSelected = { en: null, ru: null }; if(document.querySelectorAll('.match-item:not(.hidden)').length === 0) document.getElementById('nextBtn').style.display = 'block'; }
                 else { setTimeout(() => { matchSelected.en.btn.classList.remove('selected'); matchSelected.ru.btn.classList.remove('selected'); matchSelected = { en: null, ru: null }; }, 400); }
             }
         }
-        function nextLevel() { level++; currentIdx = 0; renderLevel(); }
+        function nextLevel() { level++; currentIdx = 0; if(level > 4) { document.getElementById('victory').style.display='flex'; createConfetti(); } else renderLevel(); }
 
         const ps = new URLSearchParams(window.location.search);
         if(ps.has('play')) {
