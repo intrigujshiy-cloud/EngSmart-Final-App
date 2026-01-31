@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>EngSmart 3.0 - Cyber Designer</title>
+    <title>EngSmart 3.0 - Cyber Designer Pro</title>
     <style>
         :root { 
             --primary: #4a90e2; 
@@ -11,7 +11,7 @@
             --card-bg: #ffffff; 
             --card-border: #4a90e2; 
             --card-neon: rgba(74, 144, 226, 0.5);
-            --btn-next: #4a90e2; /* Цвет кнопки Next */
+            --btn-next: #4a90e2;
             --cyber-bg: #0d0d12;
             --cyber-panel: #1a1a24;
             --cyber-accent: #00f2ff;
@@ -38,16 +38,13 @@
             height: 140px; padding: 12px; background: #000; border: 1px solid #333; 
             border-radius: 8px; resize: none; font-family: 'Courier New', monospace; 
             width: 100%; box-sizing: border-box; color: var(--cyber-accent); outline: none;
-            transition: 0.3s;
         }
-        textarea:focus { border-color: var(--cyber-accent); box-shadow: 0 0 10px var(--cyber-accent); }
         
         .btn-start { background: #ff0055; color: white; border: none; padding: 15px; border-radius: 5px; font-weight: bold; cursor: pointer; font-size: 18px; text-transform: uppercase; clip-path: polygon(10% 0, 100% 0, 90% 100%, 0% 100%); transition: 0.3s; }
-        .btn-start:hover { transform: scale(1.02); box-shadow: 0 0 20px #ff0055; }
         .btn-iframe { background: transparent; color: var(--cyber-accent); border: 1px solid var(--cyber-accent); padding: 8px; border-radius: 4px; cursor: pointer; font-size: 12px; }
         #iframeResult { background: #000; color: #0f0; padding: 10px; font-family: monospace; font-size: 11px; border: 1px dashed #0f0; border-radius: 5px; display: none; }
 
-        /* ИГРОВОЙ ЭКРАН (БЕЗ ИЗМЕНЕНИЙ ЛОГИКИ) */
+        /* ИГРА */
         #game-screen { display: none; height: 100vh; flex-direction: column; background-size: cover; background-position: center; }
         .overlay { position: absolute; inset: 0; background: var(--bg-overlay); backdrop-filter: blur(5px); display: flex; flex-direction: column; }
         .header { height: 60px; display: flex; justify-content: center; align-items: center; gap: 15px; background: white; z-index: 10; }
@@ -65,16 +62,18 @@
         .card-back { transform: rotateY(180deg); font-weight: bold; color: #000 !important; }
 
         .footer { height: 80px; display: flex; justify-content: center; align-items: center; }
-        /* КНОПКА NEXT С НАСТРАИВАЕМЫМ ЦВЕТОМ */
-        .next-btn { padding: 12px 35px; background: var(--btn-next); color: white; border: none; border-radius: 50px; font-size: 16px; font-weight: bold; cursor: pointer; box-shadow: 0 4px 15px rgba(0,0,0,0.2); }
+        .next-btn { padding: 12px 35px; background: var(--btn-next); color: white; border: none; border-radius: 50px; font-size: 16px; font-weight: bold; cursor: pointer; }
         
-        /* Общие элементы игры */
         .card { width: 150px; height: 200px; perspective: 1000px; cursor: pointer; }
         .card-inner { position: relative; width: 100%; height: 100%; transition: 0.6s; transform-style: preserve-3d; }
         .card.flipped .card-inner { transform: rotateY(180deg); }
         .match-item { padding: 12px; background: var(--card-bg); border: 3px solid var(--card-border); border-radius: 12px; cursor: pointer; width: 45%; font-weight: bold; text-align: center; margin-bottom: 10px; box-shadow: 0 0 10px var(--card-neon); color: #000 !important; }
         .match-item.selected { background: var(--card-border); color: white !important; }
         .match-item.hidden { opacity: 0; pointer-events: none; }
+        
+        /* Стиль для зоны сборки букв */
+        #az { min-height: 50px; border-bottom: 3px dashed var(--primary); margin: 20px auto; font-size: 35px; color: #000; letter-spacing: 5px; text-transform: uppercase; width: fit-content; padding: 0 20px; }
+        .error-flash { color: #ff0055 !important; border-bottom-color: #ff0055 !important; }
     </style>
 </head>
 <body>
@@ -82,23 +81,19 @@
     <div id="setup-screen">
         <div class="setup-panel">
             <h2 style="margin:0; color: var(--cyber-accent); text-align: center; letter-spacing: 3px;">ENGSMART 3.0 CYBER</h2>
-            
             <div class="grid-inputs">
-                <div><label>English</label><textarea id="enList" placeholder="Enter words..."></textarea></div>
-                <div><label>Russian</label><textarea id="ruList" placeholder="Введите перевод..."></textarea></div>
+                <div><label>English</label><textarea id="enList" placeholder="apple&#10;cat..."></textarea></div>
+                <div><label>Russian</label><textarea id="ruList" placeholder="яблоко&#10;кот..."></textarea></div>
                 <div><label>Images</label><textarea id="imgList" placeholder="URLs..."></textarea></div>
             </div>
-
             <div class="color-inputs">
                 <div class="color-field"><label>Рамка</label><input type="color" id="colorBorder" value="#4a90e2"></div>
                 <div class="color-field"><label>Фон карт</label><input type="color" id="colorBg" value="#ffffff"></div>
                 <div class="color-field"><label>Неон</label><input type="color" id="colorNeon" value="#4a90e2"></div>
                 <div class="color-field"><label>Кнопка Next</label><input type="color" id="colorBtn" value="#4a90e2"></div>
             </div>
-
             <label>Фон приложения (URL)</label>
             <input type="text" id="bgInput" value="https://images.unsplash.com/photo-1518709268805-4e9042af9f23" style="padding:10px; background:#000; border:1px solid #333; color:white; border-radius:5px;">
-            
             <button class="btn-start" onclick="startGame()">INITIALIZE INTERFACE 🚀</button>
             <button class="btn-iframe" onclick="generateIframe()">GENERATE GENIALLY CODE 🔗</button>
             <div id="iframeResult"></div>
@@ -107,13 +102,9 @@
 
     <div id="game-screen">
         <div class="overlay">
-            <div class="header">
-                <div class="dot" id="d1"></div><div class="dot" id="d2"></div><div class="dot" id="d3"></div><div class="dot" id="d4"></div>
-            </div>
+            <div class="header"><div class="dot" id="d1"></div><div class="dot" id="d2"></div><div class="dot" id="d3"></div><div class="dot" id="d4"></div></div>
             <div id="content" class="content"></div>
-            <div class="footer">
-                <button id="nextBtn" class="next-btn" onclick="nextLevel()">NEXT →</button>
-            </div>
+            <div class="footer"><button id="nextBtn" class="next-btn" onclick="nextLevel()">NEXT →</button></div>
         </div>
     </div>
 
@@ -145,7 +136,6 @@
             const cg = encodeURIComponent(document.getElementById('colorBg').value);
             const cn = encodeURIComponent(document.getElementById('colorNeon').value);
             const ct = encodeURIComponent(document.getElementById('colorBtn').value);
-            
             const gameUrl = `${window.location.href.split('?')[0]}?play=true&en=${en}&ru=${ru}&im=${im}&bg=${bg}&cb=${cb}&cg=${cg}&cn=${cn}&ct=${ct}`;
             document.getElementById('iframeResult').innerText = `<iframe src="${gameUrl}" width="800" height="600" style="border:0;" allowfullscreen></iframe>`;
             document.getElementById('iframeResult').style.display = 'block';
@@ -182,18 +172,28 @@
                 cont.append(cEn, cRu);
             } else if(level === 3) {
                 document.getElementById('nextBtn').style.display = 'none';
-                const w = words[currentIdx]; let curS = ""; let lets = w.en.split('').sort(() => Math.random()-0.5);
-                cont.innerHTML = `<div style="text-align:center;width:100%"><img src="${w.im}" style="width:120px"><div id="az" style="min-height:40px;border-bottom:3px dashed var(--primary);margin:20px;font-size:30px;color:#000"></div><div id="lz"></div></div>`;
+                const w = words[currentIdx]; let curS = ""; 
+                let lets = w.en.split('').sort(() => Math.random()-0.5);
+                cont.innerHTML = `<div style="text-align:center;width:100%"><img src="${w.im}" style="width:120px;display:block;margin:0 auto 10px"><div id="az"></div><div id="lz"></div></div>`;
+                const az = document.getElementById('az');
                 lets.forEach(l => {
                     const s = document.createElement('div'); s.className = 'match-item'; s.style.display='inline-block'; s.style.width='auto'; s.style.margin='5px'; s.innerText = l;
-                    s.onclick = () => { curS += l; document.getElementById('az').innerText = curS; s.style.visibility = "hidden";
-                        if(curS.toLowerCase() === w.en.toLowerCase()) { speak(w.en); setTimeout(() => { currentIdx++; if(currentIdx < words.length) renderLevel(); else { currentIdx=0; document.getElementById('nextBtn').style.display='block'; } }, 600); }
+                    s.onclick = () => { 
+                        curS += l; az.innerText = curS; s.style.visibility = "hidden";
+                        if(curS.length === w.en.length) {
+                            if(curS.toLowerCase() === w.en.toLowerCase()) {
+                                speak(w.en); setTimeout(() => { currentIdx++; if(currentIdx < words.length) renderLevel(); else { currentIdx=0; document.getElementById('nextBtn').style.display='block'; } }, 600);
+                            } else {
+                                az.classList.add('error-flash');
+                                setTimeout(() => { renderLevel(); }, 600); // Авто-сброс при ошибке
+                            }
+                        }
                     }; cont.querySelector('#lz').appendChild(s);
                 });
             } else if(level === 4) {
                 document.getElementById('nextBtn').style.display = 'none';
                 const w = words[currentIdx];
-                cont.innerHTML = `<div style="background:var(--card-bg);padding:20px;border-radius:20px;border:5px solid var(--card-border);text-align:center;width:280px;margin:auto;box-shadow:0 0 20px var(--card-neon)"><img src="${w.im}" style="width:100px"><h3 style="color:#000">${w.ru}</h3><input type="text" id="wi" style="width:100%;font-size:24px;text-align:center;border:none;border-bottom:3px solid #ddd;outline:none;text-transform:uppercase;color:#000"></div>`;
+                cont.innerHTML = `<div style="background:var(--card-bg);padding:20px;border-radius:20px;border:5px solid var(--card-border);text-align:center;width:280px;margin:auto;box-shadow:0 0 20px var(--card-neon)"><img src="${w.im}" style="width:100px"><h3 style="color:#000">${w.ru}</h3><input type="text" id="wi" style="width:100%;font-size:24px;text-align:center;border:none;border-bottom:3px solid #ddd;outline:none;text-transform:uppercase;color:#000" autocomplete="off"></div>`;
                 const inp = document.getElementById('wi'); inp.focus();
                 inp.oninput = () => { if(inp.value.toLowerCase() === w.en.toLowerCase()) { speak(w.en); setTimeout(() => { currentIdx++; if(currentIdx < words.length) renderLevel(); else alert('MISSION COMPLETE!'); }, 500); } };
             }
